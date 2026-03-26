@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Convo Starters</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      background: #f5f3ee;
+      color: #1c1c1c;
+      min-height: 100vh;
+      padding: 48px 24px 80px;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 48px;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #1c1c1c;
+    }
+
+    header p {
+      margin-top: 8px;
+      font-size: 1rem;
+      color: #666;
+      line-height: 1.5;
+    }
+
+    /* ── Steps ── */
+    .step { display: none; }
+    .step.active { display: block; }
+
+    /* ── Query form ── */
+    #step-query textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 16px;
+      font-size: 1rem;
+      font-family: inherit;
+      line-height: 1.6;
+      border: 1.5px solid #d4d0c8;
+      border-radius: 8px;
+      background: #fff;
+      resize: vertical;
+      color: #1c1c1c;
+      transition: border-color 0.15s;
+    }
+
+    #step-query textarea:focus {
+      outline: none;
+      border-color: #1c1c1c;
+    }
+
+    #step-query textarea::placeholder { color: #aaa; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-block;
+      padding: 12px 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: opacity 0.15s, background 0.15s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: #1c1c1c;
+      color: #fff;
+    }
+
+    .btn-primary:hover:not(:disabled) { opacity: 0.82; }
+
+    .btn-primary:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: #1c1c1c;
+      border: 1.5px solid #ccc;
+      padding: 10px 20px;
+    }
+
+    .btn-ghost:hover { border-color: #1c1c1c; }
+
+    .btn-small {
+      padding: 7px 14px;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .mt-16 { margin-top: 16px; }
+    .mt-24 { margin-top: 24px; }
+    .mt-32 { margin-top: 32px; }
+    .mt-48 { margin-top: 48px; }
+
+    /* ── Loading ── */
+    #step-loading {
+      text-align: center;
+      padding: 80px 0;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #e0ddd8;
+      border-top-color: #1c1c1c;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #step-loading p {
+      color: #666;
+      font-size: 0.95rem;
+    }
+
+    /* ── Org cards ── */
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 16px;
+    }
+
+    .org-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .org-card {
+      background: #fff;
+      border: 1.5px solid #e8e5df;
+      border-radius: 10px;
+      padding: 20px 24px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+
+    .org-card:hover { border-color: #bbb; }
+
+    .org-card.selected {
+      border-color: #1c1c1c;
+      box-shadow: 0 0 0 1px #1c1c1c;
+    }
+
+    .org-card.disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .org-number {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #bbb;
+      min-width: 24px;
+      padding-top: 2px;
+    }
+
+    .org-card.selected .org-number { color: #1c1c1c; }
+
+    .org-body { flex: 1; }
+
+    .org-name {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #1c1c1c;
+    }
+
+    .org-desc {
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.55;
+    }
+
+    .org-contact {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: #888;
+    }
+
+    .org-contact strong { color: #555; }
+
+    .selection-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 0 0;
+    }
+
+    .selection-count {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .selection-count span { font-weight: 700; color: #1c1c1c; }
+
+    /* ── Email cards ── */
+    .email-card {
+      background: #fff;
+      border: 1.5px solid #e8e5df;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .email-card-header {
+      padding: 16px 24px;
+      border-bottom: 1px solid #f0ede8;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #faf9f6;
+    }
+
+    .email-card-org { font-weight: 700; font-size: 0.95rem; }
+
+    .email-card-contact {
+      font-size: 0.82rem;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    .email-body {
+      padding: 24px;
+      font-size: 0.92rem;
+      line-height: 1.7;
+      color: #2a2a2a;
+      white-space: pre-wrap;
+      font-family: "Georgia", serif;
+    }
+
+    .email-loading {
+      padding: 40px 24px;
+      text-align: center;
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    .email-loading .spinner {
+      width: 24px;
+      height: 24px;
+      border-width: 2px;
+      margin-bottom: 12px;
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: 1px solid #d4d0c8;
+      border-radius: 5px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-family: inherit;
+      color: #666;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+
+    .copy-btn:hover { border-color: #1c1c1c; color: #1c1c1c; }
+    .copy-btn.copied { color: #4a7c59; border-color: #4a7c59; }
+
+    /* ── Error ── */
+    .error-msg {
+      background: #fff5f5;
+      border: 1px solid #f5c6c6;
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-size: 0.9rem;
+      color: #b44;
+      margin-top: 16px;
+    }
+
+    /* ── Footer actions ── */
+    .footer-actions {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid #e8e5df;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Convo Starters</h1>
+      <p>Describe what you're looking for. Get matched organizations and a warm email to each one.</p>
+    </header>
+
+    <!-- Step 1: Query -->
+    <div id="step-query" class="step active">
+      <textarea
+        id="query-input"
+        placeholder="e.g. organizations that sponsor cohort-based writing courses for professional women in nonprofits"
+        rows="5"
+      ></textarea>
+      <div id="query-error"></div>
+      <div class="mt-16">
+        <button class="btn btn-primary" id="search-btn" onclick="startSearch()">Find Organizations</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Loading -->
+    <div id="step-loading" class="step">
+      <div class="spinner"></div>
+      <p id="loading-msg">Searching the web...</p>
+    </div>
+
+    <!-- Step 3: Org results + selection -->
+    <div id="step-orgs" class="step">
+      <div class="section-label">Matching Organizations</div>
+      <div class="org-grid" id="org-grid"></div>
+
+      <div class="selection-bar">
+        <div class="selection-count">
+          <span id="selection-count">0</span> of 3 selected
+        </div>
+        <button class="btn btn-primary" id="emails-btn" disabled onclick="startEmails()">
+          Write My Emails
+        </button>
+      </div>
+
+      <div id="orgs-error"></div>
+    </div>
+
+    <!-- Step 4: Emails -->
+    <div id="step-emails" class="step">
+      <div class="section-label">Your Outreach Emails</div>
+      <div id="emails-container"></div>
+      <div class="footer-actions">
+        <button class="btn btn-ghost" onclick="restart()">Start Over</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentQuery = "";
+    let allOrgs = [];
+    let selectedOrgs = [];
+
+    function showStep(id) {
+      document.querySelectorAll(".step").forEach(s => s.classList.remove("active"));
+      document.getElementById(id).classList.add("active");
+    }
+
+    function setLoadingMsg(msg) {
+      document.getElementById("loading-msg").textContent = msg;
+    }
+
+    // ── Step 1 → Search ──────────────────────────────────────────────
+    async function startSearch() {
+      const query = document.getElementById("query-input").value.trim();
+      if (!query) {
+        document.getElementById("query-error").innerHTML =
+          '<div class="error-msg">Please describe what you\'re looking for.</div>';
+        return;
+      }
+
+      currentQuery = query;
+      document.getElementById("query-error").innerHTML = "";
+      setLoadingMsg("Searching the web...");
+      showStep("step-loading");
+
+      try {
+        const res = await fetch("/api/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query }),
+        });
+        const data = await res.json();
+
+        if (!res.ok || data.error) {
+          showQueryError(data.error || "Something went wrong. Please try again.");
+          return;
+        }
+
+        allOrgs = data.organizations;
+        selectedOrgs = [];
+        renderOrgs(allOrgs);
+        showStep("step-orgs");
+      } catch (err) {
+        showQueryError("Network error. Please try again.");
+      }
+    }
+
+    function showQueryError(msg) {
+      showStep("step-query");
+      document.getElementById("query-error").innerHTML =
+        `<div class="error-msg">${msg}</div>`;
+    }
+
+    // ── Render org cards ─────────────────────────────────────────────
+    function renderOrgs(orgs) {
+      const grid = document.getElementById("org-grid");
+      grid.innerHTML = "";
+
+      orgs.forEach((org, i) => {
+        const card = document.createElement("div");
+        card.className = "org-card";
+        card.dataset.index = i;
+        card.onclick = () => toggleOrg(i);
+
+        const contact = org.contact
+          ? `<div class="org-contact"><strong>Contact:</strong> ${org.contact}</div>`
+          : "";
+
+        card.innerHTML = `
+          <div class="org-number">${i + 1}</div>
+          <div class="org-body">
+            <div class="org-name">${org.name}</div>
+            <div class="org-desc">${org.description}</div>
+            ${contact}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+
+      updateSelectionUI();
+    }
+
+    function toggleOrg(index) {
+      const card = document.querySelector(`.org-card[data-index="${index}"]`);
+      if (card.classList.contains("disabled")) return;
+
+      const alreadySelected = selectedOrgs.findIndex(o => o === allOrgs[index]);
+
+      if (alreadySelected >= 0) {
+        selectedOrgs.splice(alreadySelected, 1);
+        card.classList.remove("selected");
+      } else {
+        if (selectedOrgs.length >= 3) return;
+        selectedOrgs.push(allOrgs[index]);
+        card.classList.add("selected");
+      }
+
+      updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
+      const count = selectedOrgs.length;
+      document.getElementById("selection-count").textContent = count;
+      document.getElementById("emails-btn").disabled = count < 3;
+
+      // Dim unselected cards when 3 are chosen
+      document.querySelectorAll(".org-card").forEach(card => {
+        const org = allOrgs[card.dataset.index];
+        const isSelected = selectedOrgs.includes(org);
+        card.classList.toggle("disabled", count >= 3 && !isSelected);
+      });
+    }
+
+    // ── Step 2 → Generate emails ─────────────────────────────────────
+    async function startEmails() {
+      if (selectedOrgs.length < 3) return;
+
+      showStep("step-emails");
+      const container = document.getElementById("emails-container");
+      container.innerHTML = "";
+
+      // Pre-render loading placeholders for all 3
+      selectedOrgs.forEach((org, i) => {
+        const card = document.createElement("div");
+        card.className = "email-card";
+        card.id = `email-card-${i}`;
+
+        const contact = org.contact
+          ? `<div class="email-card-contact">${org.contact}</div>`
+          : "";
+
+        card.innerHTML = `
+          <div class="email-card-header">
+            <div>
+              <div class="email-card-org">${org.name}</div>
+              ${contact}
+            </div>
+            <button class="copy-btn" id="copy-btn-${i}" onclick="copyEmail(${i})" style="display:none">
+              Copy
+            </button>
+          </div>
+          <div class="email-loading" id="email-loading-${i}">
+            <div class="spinner"></div>
+            Writing email ${i + 1} of 3...
+          </div>
+          <div class="email-body" id="email-body-${i}" style="display:none"></div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      // Generate emails sequentially so each appears as it finishes
+      for (let i = 0; i < selectedOrgs.length; i++) {
+        const org = selectedOrgs[i];
+        try {
+          const res = await fetch("/api/email", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: currentQuery, org }),
+          });
+          const data = await res.json();
+
+          document.getElementById(`email-loading-${i}`).style.display = "none";
+
+          if (!res.ok || data.error) {
+            const body = document.getElementById(`email-body-${i}`);
+            body.style.display = "block";
+            body.innerHTML = `<div class="error-msg">${data.error || "Failed to generate email."}</div>`;
+          } else {
+            const body = document.getElementById(`email-body-${i}`);
+            body.textContent = data.email;
+            body.style.display = "block";
+            document.getElementById(`copy-btn-${i}`).style.display = "block";
+          }
+        } catch (err) {
+          document.getElementById(`email-loading-${i}`).style.display = "none";
+          const body = document.getElementById(`email-body-${i}`);
+          body.style.display = "block";
+          body.innerHTML = '<div class="error-msg">Network error. Please try again.</div>';
+        }
+      }
+    }
+
+    // ── Copy to clipboard ────────────────────────────────────────────
+    async function copyEmail(index) {
+      const text = document.getElementById(`email-body-${index}`).textContent;
+      const btn = document.getElementById(`copy-btn-${index}`);
+      try {
+        await navigator.clipboard.writeText(text);
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy";
+          btn.classList.remove("copied");
+        }, 2000);
+      } catch {
+        btn.textContent = "Select text above to copy";
+      }
+    }
+
+    // ── Restart ──────────────────────────────────────────────────────
+    function restart() {
+      currentQuery = "";
+      allOrgs = [];
+      selectedOrgs = [];
+      document.getElementById("query-input").value = "";
+      document.getElementById("query-error").innerHTML = "";
+      showStep("step-query");
+    }
+
+    // Submit on Cmd/Ctrl+Enter
+    document.getElementById("query-input").addEventListener("keydown", e => {
+      if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) startSearch();
+    });
+  </script>
+</body>
+</html>
