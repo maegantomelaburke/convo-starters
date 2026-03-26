@@ -45,7 +45,6 @@
     /* ── Query form ── */
     #step-query textarea {
       width: 100%;
-      min-height: 120px;
       padding: 16px;
       font-size: 1rem;
       font-family: inherit;
@@ -64,6 +63,14 @@
     }
 
     #step-query textarea::placeholder { color: #aaa; }
+
+    .field-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+    }
 
     /* ── Buttons ── */
     .btn {
@@ -314,11 +321,20 @@
 
     <!-- Step 1: Query -->
     <div id="step-query" class="step active">
+      <label class="field-label" for="query-input">What are you looking for?</label>
       <textarea
         id="query-input"
         placeholder="e.g. organizations that sponsor cohort-based writing courses for professional women in nonprofits"
         rows="5"
       ></textarea>
+      <div style="margin-top: 20px;">
+        <label class="field-label" for="context-input">Anything to add? <span style="font-weight:400;color:#aaa;">(optional)</span></label>
+        <textarea
+          id="context-input"
+          placeholder="Add context about your project, goals, or anything the emails should reference."
+          rows="3"
+        ></textarea>
+      </div>
       <div id="query-error"></div>
       <div class="mt-16">
         <button class="btn btn-primary" id="search-btn" onclick="startSearch()">Find Organizations</button>
@@ -360,6 +376,7 @@
 
   <script>
     let currentQuery = "";
+    let currentContext = "";
     let allOrgs = [];
     let selectedOrgs = [];
 
@@ -382,6 +399,7 @@
       }
 
       currentQuery = query;
+      currentContext = document.getElementById("context-input").value.trim();
       document.getElementById("query-error").innerHTML = "";
       setLoadingMsg("Searching the web...");
       showStep("step-loading");
@@ -519,7 +537,7 @@
           const res = await fetch("/api/email", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query: currentQuery, org }),
+            body: JSON.stringify({ query: currentQuery, context: currentContext, org }),
           });
           const data = await res.json();
 
@@ -567,6 +585,7 @@
       allOrgs = [];
       selectedOrgs = [];
       document.getElementById("query-input").value = "";
+      document.getElementById("context-input").value = "";
       document.getElementById("query-error").innerHTML = "";
       showStep("step-query");
     }

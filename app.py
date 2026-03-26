@@ -41,9 +41,11 @@ Return ONLY a valid JSON array with no other text before or after it:
     return json.loads(text)[:5]
 
 
-def write_email(org: dict, query: str) -> str:
+def write_email(org: dict, query: str, context: str = "") -> str:
     contact = org.get("contact") or ""
     contact_name = contact.split(",")[0].split()[0] if contact else ""
+
+    context_section = f"\nAdditional context about the sender: {context}" if context else ""
 
     time.sleep(1)
 
@@ -57,7 +59,7 @@ def write_email(org: dict, query: str) -> str:
 
 About this organization: {org['description']}
 Contact: {contact if contact else 'unknown'}
-What I am looking for: {query}
+What I am looking for: {query}{context_section}
 
 Rules for the email:
 - Warm, direct, and conversational. Like a smart curious person reaching out to someone she genuinely respects.
@@ -102,11 +104,12 @@ def search():
 def generate_email():
     data = request.json or {}
     query = data.get("query", "")
+    context = data.get("context", "")
     org = data.get("org", {})
     if not query or not org:
         return jsonify({"error": "Missing query or org"}), 400
     try:
-        email = write_email(org, query)
+        email = write_email(org, query, context)
         return jsonify({"email": email, "org": org})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
