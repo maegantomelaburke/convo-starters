@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import anthropic
 from flask import Flask, request, jsonify, render_template
 
@@ -44,8 +45,10 @@ def write_email(org: dict, query: str) -> str:
     contact = org.get("contact") or ""
     contact_name = contact.split(",")[0].split()[0] if contact else ""
 
+    time.sleep(1)
+
     response = client.messages.create(
-        model="claude-opus-4-6",
+        model="claude-sonnet-4-20250514",
         max_tokens=1000,
         messages=[
             {
